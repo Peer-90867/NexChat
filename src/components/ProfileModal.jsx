@@ -9,6 +9,8 @@ export const ProfileModal = ({ onClose }) => {
   const { profile, setProfile } = useAuth();
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [username, setUsername] = useState(profile?.username || '');
+  const [bio, setBio] = useState(profile?.bio || '');
+  const [theme, setTheme] = useState(profile?.theme || 'purple');
   const [status, setStatus] = useState(profile?.status || 'online');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
@@ -26,7 +28,9 @@ export const ProfileModal = ({ onClose }) => {
         .update({ 
           full_name: fullName,
           username: username,
-          status: status
+          status: status,
+          bio: bio,
+          theme: theme
         })
         .eq('id', profile.id);
 
@@ -39,7 +43,7 @@ export const ProfileModal = ({ onClose }) => {
         return;
       }
       
-      setProfile({ ...profile, full_name: fullName, username: username, status: status });
+      setProfile({ ...profile, full_name: fullName, username: username, status: status, bio: bio, theme: theme });
       toast.success('Profile updated successfully');
       onClose();
     } catch (error) {
@@ -174,17 +178,45 @@ export const ProfileModal = ({ onClose }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
-              >
-                <option value="online">Online</option>
-                <option value="away">Away</option>
-                <option value="busy">Busy</option>
-                <option value="offline">Offline</option>
-              </select>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Bio</label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+                placeholder="Tell us about yourself..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="online">Online</option>
+                  <option value="away">Away</option>
+                  <option value="busy">Busy</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1.5">Theme</label>
+                <select
+                  value={theme}
+                  onChange={(e) => setTheme(e.target.value)}
+                  className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
+                >
+                  <option value="purple">Purple (Default)</option>
+                  <option value="blue">Blue</option>
+                  <option value="emerald">Emerald</option>
+                  <option value="rose">Rose</option>
+                  <option value="amber">Amber</option>
+                </select>
+              </div>
             </div>
 
             <div className="pt-4 flex gap-3">

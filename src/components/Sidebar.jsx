@@ -10,13 +10,26 @@ import { ProfileModal } from './ProfileModal';
 import { NewDMModal } from './NewDMModal';
 import { RoomList } from './RoomList';
 import { DMList } from './DMList';
+import { ActiveNow } from './ActiveNow';
 
-export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onlineUsers, mobileOpen, setMobileOpen }) => {
+export const Sidebar = ({ 
+  activeRoom, 
+  setActiveRoom, 
+  activeDM, 
+  setActiveDM, 
+  onlineUsers, 
+  mobileOpen, 
+  setMobileOpen,
+  rooms,
+  roomsLoading,
+  createRoom,
+  joinRoomByCode,
+  joinRoomByName,
+  dms,
+  dmsLoading
+}) => {
   const { user, profile, signOut } = useAuth();
-  const { rooms, createRoom, joinRoomByCode, joinRoomByName, loading: roomsLoading } = useRooms();
   const navigate = useNavigate();
-  const [dms, setDms] = useState([]);
-  const [dmsLoading, setDmsLoading] = useState(true);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNewDMOpen, setIsNewDMOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
@@ -26,88 +39,9 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
   const [joinName, setJoinName] = useState('');
   const [isJoiningRoom, setIsJoiningRoom] = useState(false);
   const [isJoiningByName, setIsJoiningByName] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
 
-  useEffect(() => {
-    if (!profile || !supabase) {
-      setDmsLoading(false);
-      return;
-    }
-
-    const fetchDMs = async () => {
-      setDmsLoading(true);
-      // Get all unique users we have DMs with
-      const { data, error } = await supabase
-        .from('direct_messages')
-        .select(`
-          sender_id,
-          receiver_id,
-          created_at,
-          sender:profiles!sender_id(id, full_name, avatar_url),
-          receiver:profiles!receiver_id(id, full_name, avatar_url)
-        `)
-        .or(`sender_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching DMs:', error);
-        setDmsLoading(false);
-        return;
-      }
-
-      // Extract unique users
-      const uniqueUsers = new Map();
-      data.forEach(msg => {
-        const otherUser = msg.sender_id === profile.id ? msg.receiver : msg.sender;
-        if (otherUser && !uniqueUsers.has(otherUser.id)) {
-          uniqueUsers.set(otherUser.id, otherUser);
-        }
-      });
-
-      setDms(Array.from(uniqueUsers.values()));
-      setDmsLoading(false);
-    };
-
-    fetchDMs();
-
-    // Subscribe to new DMs
-    const subscription = supabase
-      .channel('public:direct_messages')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'direct_messages',
-        filter: `sender_id=eq.${profile.id}`
-      }, fetchDMs)
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'direct_messages',
-        filter: `receiver_id=eq.${profile.id}`
-      }, async (payload) => {
-        fetchDMs();
-        
-        // Show browser notification if we received a message
-        if (Notification.permission === 'granted' && document.hidden) {
-          const { data: sender } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('id', payload.new.sender_id)
-            .single();
-            
-          if (sender) {
-            new Notification(`New message from ${sender.full_name}`, {
-              body: payload.new.content || 'Sent an attachment',
-              icon: '/vite.svg'
-            });
-          }
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, [profile]);
+  // Removed local fetching logic, now handled in Chat.jsx
 
   const handleCreateRoom = async (e) => {
     e.preventDefault();
@@ -146,6 +80,9 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
     }
   };
 
+  const filteredRooms = rooms.filter(r => r.name.toLowerCase().includes(globalSearch.toLowerCase()));
+  const filteredDMs = dms.filter(dm => dm.full_name.toLowerCase().includes(globalSearch.toLowerCase()));
+
   return (
     <>
       {/* Backdrop for mobile */}
@@ -170,37 +107,60 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
         className={`fixed lg:relative z-50 w-80 bg-[#1a1a1a] border-r border-white/10 flex flex-col h-full shadow-2xl lg:shadow-none`}
       >
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
-          <div className="flex items-center gap-2 min-w-0">
-            <MessageSquare className="w-6 h-6 text-purple-500 shrink-0" />
-            <div className="min-w-0">
-              <span className="font-bold text-lg text-white block truncate">NexChat</span>
-              <span className="text-[10px] text-gray-500 truncate block">{profile?.full_name || 'User'}</span>
+        <div className="h-16 flex flex-col justify-center px-4 border-b border-white/10">
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2 min-w-0">
+              <MessageSquare className="w-6 h-6 text-purple-500 shrink-0" />
+              <div className="min-w-0">
+                <span className="font-bold text-lg text-white block truncate">NexChat</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setIsNewDMOpen(true)}
+                className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+                title="New Direct Message"
+              >
+                <Users className="w-5 h-5" />
+              </button>
+              <button 
+                onClick={() => setMobileOpen(false)}
+                className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors lg:hidden"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-1">
-            <button 
-              onClick={() => setIsNewDMOpen(true)}
-              className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
-              title="New Direct Message"
-            >
-              <Users className="w-5 h-5" />
-            </button>
-            <button 
-              onClick={() => setMobileOpen(false)}
-              className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors lg:hidden"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        </div>
+
+        {/* Global Search */}
+        <div className="px-4 py-3">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-purple-500 transition-colors" />
+            <input 
+              type="text"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              placeholder="Search chats..."
+              className="w-full bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:ring-1 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+            />
           </div>
         </div>
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
           
+          {/* Active Now Horizontal */}
+          <ActiveNow 
+            onlineUsers={onlineUsers}
+            profile={profile}
+            setActiveDM={setActiveDM}
+            setActiveRoom={setActiveRoom}
+          />
+
           {/* Rooms Section */}
           <RoomList 
-            rooms={rooms}
+            rooms={filteredRooms}
             roomsLoading={roomsLoading}
             activeRoom={activeRoom}
             setActiveRoom={setActiveRoom}
@@ -226,7 +186,7 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
 
           {/* Direct Messages Section */}
           <DMList 
-            dms={dms}
+            dms={filteredDMs}
             dmsLoading={dmsLoading}
             activeDM={activeDM}
             setActiveDM={setActiveDM}

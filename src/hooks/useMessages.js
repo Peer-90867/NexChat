@@ -94,12 +94,43 @@ export const useMessages = (roomId, isDM = false) => {
           setMessages(prev => [...prev, { ...newMsg, user: userData }]);
         }
       })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table, filter }, (payload) => {
+        setMessages(prev => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table, filter }, (payload) => {
+        setMessages(prev => prev.filter(m => m.id !== payload.old.id));
+      })
       .subscribe();
 
     return () => {
       supabase.removeChannel(subscription);
     };
   }, [roomId, isDM, user]);
+
+  useEffect(() => {
+    if (!messages.length || !user || !roomId) return;
+    
+    const markAsRead = async () => {
+      const table = isDM ? 'direct_messages' : 'messages';
+      const unread = messages.filter(m => {
+        const senderId = isDM ? m.sender_id : m.user_id;
+        return senderId !== user.id && (!m.read_by || !m.read_by.includes(user.id));
+      });
+      
+      if (unread.length === 0) return;
+      
+      // Mark all unread messages as read in one go if possible, or iterate
+      for (const msg of unread) {
+        const newReadBy = [...(msg.read_by || []), user.id];
+        await supabase
+          .from(table)
+          .update({ read_by: newReadBy })
+          .eq('id', msg.id);
+      }
+    };
+    
+    markAsRead();
+  }, [messages, user, isDM, roomId]);
 
   const sendMessage = async (content, fileUrl = null, fileType = null, fileName = null, parentId = null) => {
     if (!content && !fileUrl) return;
@@ -141,5 +172,80 @@ export const useMessages = (roomId, isDM = false) => {
     }
   };
 
-  return { messages, loading, sendMessage };
+  const deleteMessage = async (messageId) => {
+    const table = isDM ? 'direct_messages' : 'messages';
+    const { error } = await supabase
+      .from(table)
+      .delete()
+      .eq('id', messageId);
+    if (error) throw error;
+  };
+
+  const editMessage = async (messageId, newContent) => {
+    const table = isDM ? 'direct_messages' : 'messages';
+    const { error } = await supabase
+      .from(table)
+      .update({ content: newContent, is_edited: true })
+      .eq('id', messageId);
+    if (error) throw error;
+  };
+
+  const addReaction = async (messageId, emoji) => {
+    if (!user) return;
+    const table = isDM ? 'direct_messages' : 'messages';
+    const { data: msg } = await supabase
+      .from(table)
+      .select('reactions')
+      .eq('id', messageId)
+      .single();
+
+    const reactions = msg?.reactions || {};
+    if (!reactions[emoji]) reactions[emoji] = [];
+    if (!reactions[emoji].includes(user.id)) {
+      reactions[emoji].push(user.id);
+      await supabase
+        .from(table)
+        .update({ reactions })
+        .eq('id', messageId);
+    }
+  };
+
+  const removeReaction = async (messageId, emoji) => {
+    if (!user) return;
+    const table = isDM ? 'direct_messages' : 'messages';
+    const { data: msg } = await supabase
+      .from(table)
+      .select('reactions')
+      .eq('id', messageId)
+      .single();
+
+    const reactions = msg?.reactions || {};
+    if (reactions[emoji]) {
+      reactions[emoji] = reactions[emoji].filter(id => id !== user.id);
+      if (reactions[emoji].length === 0) delete reactions[emoji];
+      await supabase
+        .from(table)
+        .update({ reactions })
+        .eq('id', messageId);
+    }
+  };
+
+  const togglePin = async (messageId, isPinned) => {
+    const table = isDM ? 'direct_messages' : 'messages';
+    await supabase
+      .from(table)
+      .update({ is_pinned: !isPinned })
+      .eq('id', messageId);
+  };
+
+  return { 
+    messages, 
+    loading, 
+    sendMessage, 
+    deleteMessage, 
+    editMessage,
+    addReaction,
+    removeReaction,
+    togglePin
+  };
 };
