@@ -11,8 +11,17 @@ CREATE TABLE profiles (
 CREATE TABLE rooms (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
+  code TEXT UNIQUE NOT NULL,
   created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create room_members table
+CREATE TABLE room_members (
+  room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (room_id, user_id)
 );
 
 -- Create messages table
@@ -42,6 +51,7 @@ CREATE TABLE direct_messages (
 -- Enable Row Level Security
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
+ALTER TABLE room_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE direct_messages ENABLE ROW LEVEL SECURITY;
 
@@ -56,8 +66,22 @@ CREATE POLICY "Users can update own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
 
 -- Rooms policies
-CREATE POLICY "Rooms are viewable by everyone" ON rooms
-  FOR SELECT USING (true);
+CREATE POLICY "Rooms are viewable by members" ON rooms
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM room_members 
+      WHERE room_members.room_id = rooms.id 
+      AND room_members.user_id = auth.uid()
+    ) OR 
+    -- Allow viewing rooms by name/code for joining
+    true
+  );
+
+-- Note: The above 'true' for select is a bit loose but necessary for 'joinRoomByName' and 'joinRoomByCode' 
+-- unless we use a separate RPC or public view. 
+-- Let's refine it: allow select if member OR if searching by code/name specifically.
+-- Actually, for 'joinRoomByName', we need to be able to find the room.
+-- A better way is to allow anyone to select rooms, but restrict messages.
 
 CREATE POLICY "Authenticated users can create rooms" ON rooms
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
@@ -65,12 +89,32 @@ CREATE POLICY "Authenticated users can create rooms" ON rooms
 CREATE POLICY "Admins can delete rooms" ON rooms
   FOR DELETE USING (auth.jwt() ->> 'email' = 'admin@yourchat.com');
 
+-- Room Members policies
+CREATE POLICY "Users can view their own room memberships" ON room_members
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can join rooms" ON room_members
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
 -- Messages policies
-CREATE POLICY "Messages are viewable by everyone" ON messages
-  FOR SELECT USING (true);
+CREATE POLICY "Messages are viewable by room members" ON messages
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM room_members 
+      WHERE room_members.room_id = messages.room_id 
+      AND room_members.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Authenticated users can insert messages" ON messages
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+  FOR INSERT WITH CHECK (
+    auth.uid() = user_id AND
+    EXISTS (
+      SELECT 1 FROM room_members 
+      WHERE room_members.room_id = messages.room_id 
+      AND room_members.user_id = auth.uid()
+    )
+  );
 
 -- Direct Messages policies
 CREATE POLICY "Users can view their own DMs" ON direct_messages

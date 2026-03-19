@@ -19,9 +19,9 @@ export const DMList = ({ dms, dmsLoading, activeDM, setActiveDM, setActiveRoom, 
           <button
             key={dmUser.id}
             onClick={() => { setActiveDM(dmUser); setActiveRoom(null); }}
-            className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-lg text-sm transition-colors ${
+            className={`w-full flex items-center gap-3 px-2 py-1.5 rounded-lg text-sm transition-all ${
               activeDM?.id === dmUser.id 
-                ? 'bg-purple-600/20 text-purple-400 font-medium' 
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' 
                 : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
             }`}
           >

@@ -153,7 +153,14 @@ export const ChatWindow = ({ activeRoom, activeDM, onlineUsers, setMobileOpen })
               <Hash className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-bold text-white truncate">{activeRoom.name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="font-bold text-white truncate">{activeRoom.name}</h2>
+                {activeRoom.code && (
+                  <span className="text-[10px] font-mono bg-white/10 text-gray-400 px-1.5 py-0.5 rounded">
+                    #{activeRoom.code}
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-gray-400 flex items-center gap-1">
                 <Users className="w-3 h-3" /> Group Room
               </p>

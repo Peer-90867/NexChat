@@ -14,24 +14,34 @@ export const Admin = () => {
   const [rooms, setRooms] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminId, setAdminId] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
   const [roomToDelete, setRoomToDelete] = useState(null);
 
-  // Check if admin
-  useEffect(() => {
-    if (user && user.email !== 'admin@yourchat.com') {
-      toast.error('Unauthorized access');
-      navigate('/chat');
+  // Hardcoded admin credentials as requested
+  const ADMIN_ID = 'admin';
+  const ADMIN_PASS = 'admin123';
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminId === ADMIN_ID && adminPassword === ADMIN_PASS) {
+      setIsAdminAuthenticated(true);
+      toast.success('Admin authenticated');
+    } else {
+      toast.error('Invalid admin credentials');
     }
-  }, [user, navigate]);
+  };
 
   useEffect(() => {
-    if (user?.email !== 'admin@yourchat.com' || !supabase) {
+    if (!isAdminAuthenticated || !supabase) {
       if (!supabase) setLoading(false);
       return;
     }
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         // Fetch stats
         const [{ count: usersCount }, { count: roomsCount }, { count: msgsCount }] = await Promise.all([
@@ -64,7 +74,7 @@ export const Admin = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [isAdminAuthenticated]);
 
   const handleDeleteRoom = async () => {
     if (!roomToDelete || !supabase) return;
@@ -85,6 +95,64 @@ export const Admin = () => {
       setRoomToDelete(null);
     }
   };
+
+  if (!isAdminAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-md bg-[#111111] p-8 rounded-2xl border border-white/10 shadow-2xl"
+        >
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center text-purple-500 mb-4">
+              <Shield className="w-8 h-8" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">Admin Access</h1>
+            <p className="text-gray-400 text-sm">Enter credentials to continue</p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Admin ID</label>
+              <input
+                type="text"
+                value={adminId}
+                onChange={(e) => setAdminId(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+                placeholder="Enter admin ID"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Password</label>
+              <input
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
+                placeholder="Enter password"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-purple-600/20"
+            >
+              Authenticate
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/chat')}
+              className="w-full text-gray-500 hover:text-gray-300 text-sm transition-colors"
+            >
+              Back to Chat
+            </button>
+          </form>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

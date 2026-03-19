@@ -13,7 +13,7 @@ import { DMList } from './DMList';
 
 export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onlineUsers, mobileOpen, setMobileOpen }) => {
   const { user, profile, signOut } = useAuth();
-  const { rooms, createRoom, loading: roomsLoading } = useRooms();
+  const { rooms, createRoom, joinRoomByCode, joinRoomByName, loading: roomsLoading } = useRooms();
   const navigate = useNavigate();
   const [dms, setDms] = useState([]);
   const [dmsLoading, setDmsLoading] = useState(true);
@@ -21,6 +21,10 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
   const [isNewDMOpen, setIsNewDMOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [joinName, setJoinName] = useState('');
+  const [isJoiningRoom, setIsJoiningRoom] = useState(false);
+  const [isJoiningByName, setIsJoiningByName] = useState(false);
 
   useEffect(() => {
     if (!profile || !supabase) {
@@ -107,9 +111,37 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     if (!newRoomName.trim()) return;
-    await createRoom(newRoomName, profile.id);
+    const room = await createRoom(newRoomName, profile.id);
+    if (room) {
+      setActiveRoom(room);
+      setActiveDM(null);
+    }
     setNewRoomName('');
     setIsCreatingRoom(false);
+  };
+
+  const handleJoinRoom = async (e) => {
+    e.preventDefault();
+    if (!joinCode.trim()) return;
+    const room = await joinRoomByCode(joinCode, profile.id);
+    if (room) {
+      setActiveRoom(room);
+      setActiveDM(null);
+      setJoinCode('');
+      setIsJoiningRoom(false);
+    }
+  };
+
+  const handleJoinByName = async (e) => {
+    e.preventDefault();
+    if (!joinName.trim()) return;
+    const room = await joinRoomByName(joinName, profile.id);
+    if (room) {
+      setActiveRoom(room);
+      setActiveDM(null);
+      setJoinName('');
+      setIsJoiningByName(false);
+    }
   };
 
   return (
@@ -137,16 +169,20 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
       >
         {/* Header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-6 h-6 text-purple-500" />
-            <span className="font-bold text-lg text-white">NexChat</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <MessageSquare className="w-6 h-6 text-purple-500 shrink-0" />
+            <div className="min-w-0">
+              <span className="font-bold text-lg text-white block truncate">NexChat</span>
+              <span className="text-[10px] text-gray-500 truncate block">{profile?.full_name || 'User'}</span>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <button 
               onClick={() => setIsNewDMOpen(true)}
               className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
+              title="New Direct Message"
             >
-              <Plus className="w-5 h-5" />
+              <Users className="w-5 h-5" />
             </button>
             <button 
               onClick={() => setMobileOpen(false)}
@@ -172,6 +208,16 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
             newRoomName={newRoomName}
             setNewRoomName={setNewRoomName}
             handleCreateRoom={handleCreateRoom}
+            joinCode={joinCode}
+            setJoinCode={setJoinCode}
+            isJoiningRoom={isJoiningRoom}
+            setIsJoiningRoom={setIsJoiningRoom}
+            handleJoinRoom={handleJoinRoom}
+            joinName={joinName}
+            setJoinName={setJoinName}
+            isJoiningByName={isJoiningByName}
+            setIsJoiningByName={setIsJoiningByName}
+            handleJoinByName={handleJoinByName}
           />
 
           {/* Direct Messages Section */}
