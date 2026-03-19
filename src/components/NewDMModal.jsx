@@ -5,11 +5,40 @@ import { supabase } from '../supabaseClient';
 import { useAuth } from '../hooks/useAuth';
 import { UserAvatar } from './UserAvatar';
 
-export const NewDMModal = ({ onClose, onSelect }) => {
+export const NewDMModal = ({ onClose, onSelect, onlineUsers }) => {
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState([]);
+  const [onlineProfiles, setOnlineProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchOnlineUsers = async () => {
+      if (!supabase || !profile || !onlineUsers) return;
+      
+      const onlineIds = Array.from(onlineUsers.keys()).filter(id => id !== profile.id);
+      if (onlineIds.length === 0) {
+        setOnlineProfiles([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, full_name, username, avatar_url, status')
+          .in('id', onlineIds);
+
+        if (error) throw error;
+        setOnlineProfiles(data);
+      } catch (error) {
+        console.error('Error fetching online profiles:', error);
+      }
+    };
+
+    if (!search.trim()) {
+      fetchOnlineUsers();
+    }
+  }, [onlineUsers, profile, search]);
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -41,6 +70,8 @@ export const NewDMModal = ({ onClose, onSelect }) => {
     const debounce = setTimeout(searchUsers, 300);
     return () => clearTimeout(debounce);
   }, [search, profile]);
+
+  const displayUsers = search.trim() ? users : onlineProfiles;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -80,19 +111,28 @@ export const NewDMModal = ({ onClose, onSelect }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+          {!search.trim() && onlineProfiles.length > 0 && (
+            <h3 className="text-xs font-bold text-purple-400 uppercase tracking-widest mb-4 px-2">Online Now</h3>
+          )}
+          
           {loading ? (
             <div className="flex justify-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500" />
             </div>
-          ) : users.length > 0 ? (
+          ) : displayUsers.length > 0 ? (
             <div className="space-y-2">
-              {users.map(user => (
+              {displayUsers.map(user => (
                 <button
                   key={user.id}
                   onClick={() => onSelect(user)}
                   className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors text-left group"
                 >
-                  <UserAvatar user={user} size="md" />
+                  <UserAvatar 
+                    user={user} 
+                    size="md" 
+                    isOnline={onlineUsers ? onlineUsers.has(user.id) : false} 
+                    status={onlineUsers ? (onlineUsers.get(user.id)?.status || user.status) : user.status} 
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white truncate group-hover:text-purple-400 transition-colors">
                       {user.full_name}
@@ -110,7 +150,7 @@ export const NewDMModal = ({ onClose, onSelect }) => {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              Type a name to search for users
+              No users are currently online.
             </div>
           )}
         </div>

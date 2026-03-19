@@ -232,6 +232,7 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
             setActiveDM={setActiveDM}
             setActiveRoom={setActiveRoom}
             onlineUsers={onlineUsers}
+            profile={profile}
           />
         </div>
 
@@ -279,12 +280,16 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
 
         {/* Modals */}
         {isProfileOpen && <ProfileModal onClose={() => setIsProfileOpen(false)} />}
-        {isNewDMOpen && <NewDMModal onClose={() => setIsNewDMOpen(false)} onSelect={(dmUser) => {
-          setActiveDM(dmUser);
-          setActiveRoom(null);
-          setIsNewDMOpen(false);
-          setMobileOpen(false);
-        }} />}
+        {isNewDMOpen && <NewDMModal 
+          onlineUsers={onlineUsers}
+          onClose={() => setIsNewDMOpen(false)} 
+          onSelect={(dmUser) => {
+            setActiveDM(dmUser);
+            setActiveRoom(null);
+            setIsNewDMOpen(false);
+            setMobileOpen(false);
+          }} 
+        />}
       </motion.div>
     </>
   );
