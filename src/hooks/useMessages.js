@@ -23,7 +23,7 @@ export const useMessages = (roomId, isDM = false) => {
             `)
             .or(`and(sender_id.eq.${user.id},receiver_id.eq.${roomId}),and(sender_id.eq.${roomId},receiver_id.eq.${user.id})`)
             .order('created_at', { ascending: false })
-            .limit(50);
+            .limit(100);
 
           if (error) throw error;
           setMessages(data.reverse());
@@ -36,7 +36,7 @@ export const useMessages = (roomId, isDM = false) => {
             `)
             .eq('room_id', roomId)
             .order('created_at', { ascending: false })
-            .limit(50);
+            .limit(100);
 
           if (error) throw error;
           setMessages(data.reverse());
@@ -101,7 +101,7 @@ export const useMessages = (roomId, isDM = false) => {
     };
   }, [roomId, isDM, user]);
 
-  const sendMessage = async (content, fileUrl = null, fileType = null, fileName = null) => {
+  const sendMessage = async (content, fileUrl = null, fileType = null, fileName = null, parentId = null) => {
     if (!content && !fileUrl) return;
     if (!supabase) return;
 
@@ -116,6 +116,7 @@ export const useMessages = (roomId, isDM = false) => {
             file_url: fileUrl,
             file_type: fileType,
             file_name: fileName,
+            parent_id: parentId,
           });
 
         if (error) throw error;
@@ -129,6 +130,7 @@ export const useMessages = (roomId, isDM = false) => {
             file_url: fileUrl,
             file_type: fileType,
             file_name: fileName,
+            parent_id: parentId,
           });
 
         if (error) throw error;
