@@ -223,8 +223,8 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
 
         {/* Modals */}
         {isProfileOpen && <ProfileModal onClose={() => setIsProfileOpen(false)} />}
-        {isNewDMOpen && <NewDMModal onClose={() => setIsNewDMOpen(false)} onSelect={(userId) => {
-          setActiveDM(userId);
+        {isNewDMOpen && <NewDMModal onClose={() => setIsNewDMOpen(false)} onSelect={(dmUser) => {
+          setActiveDM(dmUser);
           setActiveRoom(null);
           setIsNewDMOpen(false);
           setMobileOpen(false);

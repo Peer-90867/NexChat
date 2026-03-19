@@ -18,6 +18,7 @@ export const ProfileModal = ({ onClose }) => {
       return;
     }
     try {
+      if (!profile?.id) return;
       const { error } = await supabase
         .from('profiles')
         .update({ full_name: fullName })
@@ -49,6 +50,7 @@ export const ProfileModal = ({ onClose }) => {
 
     setUploading(true);
     try {
+      if (!profile?.id) return;
       const fileExt = file.name.split('.').pop();
       const fileName = `${profile.id}-${Math.random()}.${fileExt}`;
       const filePath = `avatars/${fileName}`;

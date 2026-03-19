@@ -20,6 +20,8 @@ export const NewDMModal = ({ onClose, onSelect }) => {
 
       setLoading(true);
       try {
+        if (!profile?.id) return;
+
         const { data, error } = await supabase
           .from('profiles')
           .select('id, full_name, avatar_url')
@@ -87,7 +89,7 @@ export const NewDMModal = ({ onClose, onSelect }) => {
               {users.map(user => (
                 <button
                   key={user.id}
-                  onClick={() => onSelect(user.id)}
+                  onClick={() => onSelect(user)}
                   className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors text-left group"
                 >
                   <UserAvatar user={user} size="md" />
