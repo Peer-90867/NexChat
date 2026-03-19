@@ -1,0 +1,5 @@
+{
+  "name": "NexChat",
+  "description": "A full-stack real-time chat web application with group rooms, direct messages, file sharing, and an admin dashboard.",
+  "requestFramePermissions": ["notifications"]
+}

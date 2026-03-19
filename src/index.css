@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-main-bg: #0a0a0a;
+  --color-card-bg: #111111;
+  --color-sidebar-bg: #1a1a1a;
+  --color-primary-purple: #7c3aed;
+  --color-purple-hover: #9333ea;
+  --color-online-green: #10b981;
+  --color-error-red: #ef4444;
+}
+
+body {
+  background-color: var(--color-main-bg);
+  color: #ffffff;
+}
