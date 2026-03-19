@@ -8,6 +8,8 @@ import toast from 'react-hot-toast';
 export const ProfileModal = ({ onClose }) => {
   const { profile, setProfile } = useAuth();
   const [fullName, setFullName] = useState(profile?.full_name || '');
+  const [username, setUsername] = useState(profile?.username || '');
+  const [status, setStatus] = useState(profile?.status || 'online');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -21,12 +23,23 @@ export const ProfileModal = ({ onClose }) => {
       if (!profile?.id) return;
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: fullName })
+        .update({ 
+          full_name: fullName,
+          username: username,
+          status: status
+        })
         .eq('id', profile.id);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('Username already taken');
+        } else {
+          throw error;
+        }
+        return;
+      }
       
-      setProfile({ ...profile, full_name: fullName });
+      setProfile({ ...profile, full_name: fullName, username: username, status: status });
       toast.success('Profile updated successfully');
       onClose();
     } catch (error) {
@@ -146,6 +159,32 @@ export const ProfileModal = ({ onClose }) => {
                 placeholder="Your name"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                placeholder="username"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-1.5">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
+              >
+                <option value="online">Online</option>
+                <option value="away">Away</option>
+                <option value="busy">Busy</option>
+                <option value="offline">Offline</option>
+              </select>
             </div>
 
             <div className="pt-4 flex gap-3">

@@ -20,6 +20,7 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNewDMOpen, setIsNewDMOpen] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
+  const [newRoomCode, setNewRoomCode] = useState('');
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   const [joinName, setJoinName] = useState('');
@@ -111,13 +112,14 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     if (!newRoomName.trim()) return;
-    const room = await createRoom(newRoomName, profile.id);
+    const room = await createRoom(newRoomName, profile.id, newRoomCode);
     if (room) {
       setActiveRoom(room);
       setActiveDM(null);
+      setNewRoomName('');
+      setNewRoomCode('');
+      setIsCreatingRoom(false);
     }
-    setNewRoomName('');
-    setIsCreatingRoom(false);
   };
 
   const handleJoinRoom = async (e) => {
@@ -207,6 +209,8 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
             setIsCreatingRoom={setIsCreatingRoom}
             newRoomName={newRoomName}
             setNewRoomName={setNewRoomName}
+            newRoomCode={newRoomCode}
+            setNewRoomCode={setNewRoomCode}
             handleCreateRoom={handleCreateRoom}
             joinCode={joinCode}
             setJoinCode={setJoinCode}
@@ -238,10 +242,16 @@ export const Sidebar = ({ activeRoom, setActiveRoom, activeDM, setActiveDM, onli
               onClick={() => setIsProfileOpen(true)}
               className="flex items-center gap-3 flex-1 min-w-0 hover:bg-white/5 p-1.5 rounded-lg transition-colors"
             >
-              <UserAvatar user={profile} size="sm" isOnline={true} />
+              <UserAvatar user={profile} size="sm" isOnline={true} status={profile?.status} />
               <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-medium text-white truncate">{profile?.full_name}</p>
-                <p className="text-xs text-green-500">Online</p>
+                <p className={`text-xs ${
+                  profile?.status === 'busy' ? 'text-red-500' :
+                  profile?.status === 'away' ? 'text-yellow-500' :
+                  'text-green-500'
+                }`}>
+                  {profile?.status ? profile.status.charAt(0).toUpperCase() + profile.status.slice(1) : 'Online'}
+                </p>
               </div>
             </button>
             

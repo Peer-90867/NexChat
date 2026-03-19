@@ -54,7 +54,7 @@ export const RoomList = ({
       </div>
 
       {isCreatingRoom && (
-        <form onSubmit={handleCreateRoom} className="mb-2">
+        <form onSubmit={handleCreateRoom} className="mb-2 space-y-2">
           <input
             type="text"
             value={newRoomName}
@@ -63,6 +63,19 @@ export const RoomList = ({
             className="w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-purple-500"
             autoFocus
           />
+          <input
+            type="text"
+            value={newRoomCode}
+            onChange={(e) => setNewRoomCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="6-digit code (optional)..."
+            className="w-full bg-[#111111] border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-purple-500"
+          />
+          <button 
+            type="submit"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+          >
+            Create Room
+          </button>
         </form>
       )}
 

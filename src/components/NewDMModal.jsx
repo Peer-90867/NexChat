@@ -24,8 +24,8 @@ export const NewDMModal = ({ onClose, onSelect }) => {
 
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, full_name, avatar_url')
-          .ilike('full_name', `%${search}%`)
+          .select('id, full_name, username, avatar_url')
+          .or(`full_name.ilike.%${search}%,username.ilike.%${search}%`)
           .neq('id', profile.id)
           .limit(10);
 
@@ -97,6 +97,9 @@ export const NewDMModal = ({ onClose, onSelect }) => {
                     <p className="text-sm font-medium text-white truncate group-hover:text-purple-400 transition-colors">
                       {user.full_name}
                     </p>
+                    {user.username && (
+                      <p className="text-xs text-gray-500 truncate">@{user.username}</p>
+                    )}
                   </div>
                 </button>
               ))}

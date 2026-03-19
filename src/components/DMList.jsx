@@ -25,7 +25,12 @@ export const DMList = ({ dms, dmsLoading, activeDM, setActiveDM, setActiveRoom, 
                 : 'text-gray-400 hover:bg-white/5 hover:text-gray-200'
             }`}
           >
-            <UserAvatar user={dmUser} size="sm" isOnline={onlineUsers.has(dmUser.id)} />
+            <UserAvatar 
+              user={dmUser} 
+              size="sm" 
+              isOnline={onlineUsers.has(dmUser.id)} 
+              status={onlineUsers.get(dmUser.id)?.status} 
+            />
             <span className="truncate">{dmUser.full_name}</span>
           </button>
         ))}

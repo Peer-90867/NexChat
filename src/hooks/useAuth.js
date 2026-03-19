@@ -95,6 +95,22 @@ export const useAuth = () => {
     }
   };
 
+  const updateStatus = async (status) => {
+    if (!supabase || !user) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ status })
+        .eq('id', user.id);
+      if (error) throw error;
+      setProfile(prev => ({ ...prev, status }));
+      toast.success(`Status updated to ${status}`);
+    } catch (error) {
+      toast.error(error.message);
+      throw error;
+    }
+  };
+
   return {
     user,
     profile,
@@ -103,6 +119,7 @@ export const useAuth = () => {
     signIn,
     signInWithGoogle,
     signOut,
+    updateStatus,
     setProfile
   };
 };

@@ -67,11 +67,11 @@ export const useRooms = () => {
     };
   }, [user]);
 
-  const createRoom = async (name, userId) => {
+  const createRoom = async (name, userId, customCode) => {
     if (!name.trim() || !supabase) return;
     try {
-      // Generate a random 6-digit code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      // Use custom code or generate a random 6-digit code
+      const code = customCode || Math.floor(100000 + Math.random() * 900000).toString();
       
       const { data: room, error: roomError } = await supabase
         .from('rooms')
@@ -79,7 +79,14 @@ export const useRooms = () => {
         .select()
         .single();
 
-      if (roomError) throw roomError;
+      if (roomError) {
+        if (roomError.code === '23505') {
+          toast.error('Room code already exists');
+        } else {
+          throw roomError;
+        }
+        return null;
+      }
 
       // Add creator as member
       const { error: memberError } = await supabase

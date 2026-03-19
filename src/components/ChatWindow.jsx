@@ -161,12 +161,23 @@ export const ChatWindow = ({ activeRoom, activeDM, onlineUsers, setMobileOpen })
 
         {isDM ? (
           <div className="flex items-center gap-3 min-w-0">
-            <UserAvatar user={activeDM} size="md" isOnline={onlineUsers.has(activeDM.id)} />
+            <UserAvatar 
+              user={activeDM} 
+              size="md" 
+              isOnline={onlineUsers.has(activeDM.id)} 
+              status={onlineUsers.get(activeDM.id)?.status} 
+            />
             <div className="min-w-0">
               <h2 className="font-bold text-white truncate">{activeDM.full_name}</h2>
               <p className="text-xs text-gray-400">
                 {onlineUsers.has(activeDM.id) ? (
-                  <span className="text-green-500">Online</span>
+                  <span className={
+                    onlineUsers.get(activeDM.id)?.status === 'busy' ? 'text-red-500' :
+                    onlineUsers.get(activeDM.id)?.status === 'away' ? 'text-yellow-500' :
+                    'text-green-500'
+                  }>
+                    {onlineUsers.get(activeDM.id)?.status ? onlineUsers.get(activeDM.id).status.charAt(0).toUpperCase() + onlineUsers.get(activeDM.id).status.slice(1) : 'Online'}
+                  </span>
                 ) : (
                   'Offline'
                 )}
@@ -230,7 +241,12 @@ export const ChatWindow = ({ activeRoom, activeDM, onlineUsers, setMobileOpen })
                 >
                   {!isMe && showAvatar && (
                     <div className="flex-shrink-0">
-                      <UserAvatar user={sender} size="md" />
+                      <UserAvatar 
+                        user={sender} 
+                        size="md" 
+                        isOnline={onlineUsers.has(sender?.id)} 
+                        status={onlineUsers.get(sender?.id)?.status} 
+                      />
                     </div>
                   )}
                   {!isMe && !showAvatar && <div className="w-10" />}
@@ -329,7 +345,12 @@ export const ChatWindow = ({ activeRoom, activeDM, onlineUsers, setMobileOpen })
                         return (
                           <div key={reply.id} className={`flex gap-3 ${isReplyMe ? 'flex-row-reverse' : ''}`}>
                             <div className="flex-shrink-0">
-                              <UserAvatar user={replySender} size="sm" />
+                              <UserAvatar 
+                                user={replySender} 
+                                size="sm" 
+                                isOnline={onlineUsers.has(replySender?.id)} 
+                                status={onlineUsers.get(replySender?.id)?.status} 
+                              />
                             </div>
                             <div className={`flex flex-col ${isReplyMe ? 'items-end' : 'items-start'} max-w-[85%]`}>
                               <div className={`

@@ -2,7 +2,9 @@
 CREATE TABLE profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   full_name TEXT,
+  username TEXT UNIQUE,
   avatar_url TEXT,
+  status TEXT DEFAULT 'online',
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -129,8 +131,13 @@ CREATE POLICY "Users can insert their own DMs" ON direct_messages
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, avatar_url)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'avatar_url');
+  INSERT INTO public.profiles (id, full_name, username, avatar_url)
+  VALUES (
+    new.id, 
+    new.raw_user_meta_data->>'full_name', 
+    COALESCE(new.raw_user_meta_data->>'username', LOWER(REPLACE(new.raw_user_meta_data->>'full_name', ' ', '_')) || '_' || SUBSTRING(new.id::text, 1, 4)),
+    new.raw_user_meta_data->>'avatar_url'
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
