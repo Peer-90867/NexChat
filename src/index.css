@@ -1,16 +1,71 @@
 @import "tailwindcss";
 
 @theme {
-  --color-main-bg: #0a0a0a;
-  --color-card-bg: #111111;
-  --color-sidebar-bg: #1a1a1a;
-  --color-primary-purple: #7c3aed;
-  --color-purple-hover: #9333ea;
+  --color-main-bg: var(--bg-main);
+  --color-card-bg: var(--bg-card);
+  --color-sidebar-bg: var(--bg-sidebar);
+  --color-primary-purple: var(--accent-color);
+  --color-purple-hover: var(--accent-hover);
   --color-online-green: #10b981;
   --color-error-red: #ef4444;
+}
+
+:root {
+  /* Default Purple Theme */
+  --bg-main: #0a0a0a;
+  --bg-card: #111111;
+  --bg-sidebar: #1a1a1a;
+  --accent-color: #7c3aed;
+  --accent-hover: #9333ea;
+}
+
+[data-theme='blue'] {
+  --accent-color: #2563eb;
+  --accent-hover: #3b82f6;
+}
+
+[data-theme='emerald'] {
+  --accent-color: #059669;
+  --accent-hover: #10b981;
+}
+
+[data-theme='rose'] {
+  --accent-color: #e11d48;
+  --accent-hover: #f43f5e;
+}
+
+[data-theme='amber'] {
+  --accent-color: #d97706;
+  --accent-hover: #f59e0b;
+}
+
+[data-theme='cyberpunk'] {
+  --bg-main: #050505;
+  --bg-card: #0a0a0a;
+  --bg-sidebar: #0f0f0f;
+  --accent-color: #00ff00;
+  --accent-hover: #33ff33;
 }
 
 body {
   background-color: var(--color-main-bg);
   color: #ffffff;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

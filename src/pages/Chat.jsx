@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '../components/Sidebar';
 import { ChatWindow } from '../components/ChatWindow';
+import { HomeDashboard } from '../components/HomeDashboard';
 import { usePresence } from '../hooks/usePresence';
 import { useRooms } from '../hooks/useRooms';
 import { useAuth } from '../hooks/useAuth';
@@ -114,14 +115,24 @@ export const Chat = () => {
         setMobileOpen={setMobileOpen}
         onlineUsers={onlineUsers}
       />
-      <ChatWindow 
-        activeRoom={activeRoom} 
-        activeDM={activeDM}
-        setMobileOpen={setMobileOpen}
-        onlineUsers={onlineUsers}
-        rooms={rooms}
-        dms={dms}
-      />
+      {activeRoom || activeDM ? (
+        <ChatWindow 
+          activeRoom={activeRoom} 
+          activeDM={activeDM}
+          setMobileOpen={setMobileOpen}
+          onlineUsers={onlineUsers}
+          rooms={rooms}
+          dms={dms}
+        />
+      ) : (
+        <HomeDashboard 
+          rooms={rooms}
+          dms={dms}
+          onlineUsers={onlineUsers}
+          setActiveRoom={setActiveRoom}
+          setActiveDM={setActiveDM}
+        />
+      )}
     </div>
   );
 };

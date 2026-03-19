@@ -105,7 +105,7 @@ export const ProfileModal = ({ onClose }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-md bg-[#111111] rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
+        className="w-full max-w-md bg-card-bg rounded-2xl border border-white/10 shadow-2xl overflow-hidden"
       >
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h2 className="text-xl font-bold text-white">Profile Settings</h2>
@@ -120,7 +120,7 @@ export const ProfileModal = ({ onClose }) => {
         <div className="p-6">
           <div className="flex flex-col items-center mb-8">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-[#1a1a1a] border-4 border-[#111111] shadow-xl">
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-white/5 border-4 border-card-bg shadow-xl">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
@@ -159,7 +159,7 @@ export const ProfileModal = ({ onClose }) => {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-purple focus:border-transparent transition-all"
                 placeholder="Your name"
                 required
               />
@@ -171,7 +171,7 @@ export const ProfileModal = ({ onClose }) => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-purple focus:border-transparent transition-all"
                 placeholder="username"
                 required
               />
@@ -182,7 +182,7 @@ export const ProfileModal = ({ onClose }) => {
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
+                className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-purple focus:border-transparent transition-all resize-none"
                 placeholder="Tell us about yourself..."
                 rows={3}
               />
@@ -194,7 +194,7 @@ export const ProfileModal = ({ onClose }) => {
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
+                  className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-primary-purple transition-all appearance-none cursor-pointer"
                 >
                   <option value="online">Online</option>
                   <option value="away">Away</option>
@@ -208,13 +208,14 @@ export const ProfileModal = ({ onClose }) => {
                 <select
                   value={theme}
                   onChange={(e) => setTheme(e.target.value)}
-                  className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-[#1a1a1a] text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none cursor-pointer"
+                  className="block w-full px-4 py-2.5 border border-white/10 rounded-xl bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-primary-purple transition-all appearance-none cursor-pointer"
                 >
                   <option value="purple">Purple (Default)</option>
                   <option value="blue">Blue</option>
                   <option value="emerald">Emerald</option>
                   <option value="rose">Rose</option>
                   <option value="amber">Amber</option>
+                  <option value="cyberpunk">Cyberpunk</option>
                 </select>
               </div>
             </div>
@@ -229,7 +230,7 @@ export const ProfileModal = ({ onClose }) => {
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2.5 px-4 bg-purple-600 hover:bg-purple-700 rounded-xl text-sm font-medium text-white transition-colors"
+                className="flex-1 py-2.5 px-4 bg-primary-purple hover:bg-primary-purple/90 rounded-xl text-sm font-medium text-white transition-colors"
               >
                 Save Changes
               </button>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Hash, Plus, Search, Settings, LogOut, Users, X } from 'lucide-react';
+import { MessageSquare, Hash, Plus, Search, Settings, LogOut, Users, X, Home } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useRooms } from '../hooks/useRooms';
 import { supabase } from '../supabaseClient';
@@ -104,7 +104,7 @@ export const Sidebar = ({
           x: mobileOpen ? 0 : (window.innerWidth < 1024 ? -320 : 0) 
         }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className={`fixed lg:relative z-50 w-80 bg-[#1a1a1a] border-r border-white/10 flex flex-col h-full shadow-2xl lg:shadow-none`}
+        className={`fixed lg:relative z-50 w-80 bg-sidebar-bg border-r border-white/10 flex flex-col h-full shadow-2xl lg:shadow-none`}
       >
         {/* Header */}
         <div className="h-16 flex flex-col justify-center px-4 border-b border-white/10">
@@ -116,6 +116,17 @@ export const Sidebar = ({
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <button 
+                onClick={() => {
+                  setActiveRoom(null);
+                  setActiveDM(null);
+                  setMobileOpen(false);
+                }}
+                className={`p-2 rounded-lg transition-colors ${!activeRoom && !activeDM ? 'bg-primary-purple/10 text-primary-purple' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+                title="Home Dashboard"
+              >
+                <Home className="w-5 h-5" />
+              </button>
               <button 
                 onClick={() => setIsNewDMOpen(true)}
                 className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
@@ -197,7 +208,7 @@ export const Sidebar = ({
         </div>
 
         {/* User Footer */}
-        <div className="p-4 border-t border-white/10 bg-[#111111]">
+        <div className="p-4 border-t border-white/10 bg-sidebar-bg/50">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => setIsProfileOpen(true)}

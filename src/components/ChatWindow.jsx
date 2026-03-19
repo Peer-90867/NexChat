@@ -371,9 +371,9 @@ export const ChatWindow = ({ activeRoom, activeDM, onlineUsers, setMobileOpen, r
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#0a0a0a] h-full relative w-full">
+    <div className="flex-1 flex flex-col bg-main-bg h-full relative w-full">
       {/* Header */}
-      <div className="h-16 flex items-center px-4 lg:px-6 border-b border-white/10 bg-[#111111]/80 backdrop-blur-md sticky top-0 z-10">
+      <div className="h-16 flex items-center px-4 lg:px-6 border-b border-white/10 bg-card-bg/80 backdrop-blur-md sticky top-0 z-10">
         <button 
           onClick={() => setMobileOpen(true)}
           className="p-2 mr-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white lg:hidden"
@@ -789,7 +789,7 @@ export const ChatWindow = ({ activeRoom, activeDM, onlineUsers, setMobileOpen, r
       </div>
 
       {/* Input Area */}
-      <div className="p-4 bg-[#111111] border-t border-white/10">
+      <div className="p-4 bg-card-bg border-t border-white/10">
         {typingUsers.size > 0 && (
           <div className="px-4 py-1 text-[10px] text-purple-400 italic animate-pulse flex items-center gap-2">
             <div className="flex gap-0.5">

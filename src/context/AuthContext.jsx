@@ -60,6 +60,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    if (profile?.theme) {
+      document.documentElement.setAttribute('data-theme', profile.theme);
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [profile?.theme]);
+
   const value = {
     user,
     profile,
